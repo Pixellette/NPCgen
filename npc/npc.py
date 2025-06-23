@@ -16,6 +16,6 @@ class NPC:
 
     def __str__(self):
         if self.hair_length == "Bald":
-            return f"a bald {self.gender} {self.race}"
+            return f"A bald {self.gender} {self.race}"
         else:
             return f"{self.gender} {self.race} with {self.hair_length} {self.hair_colour} hair"
