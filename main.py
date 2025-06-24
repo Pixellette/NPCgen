@@ -1,8 +1,7 @@
-from npc.npc import NPC 
+# main.py
+
+from ui import NPCGeneratorApp
 
 if __name__ == "__main__":
-    # Generate and print 5 NPCs
-    for i, _ in enumerate(range(5), start=1):
-        npc = NPC()
-        print(f"{i}) {npc}")
-    
+    app = NPCGeneratorApp()
+    app.mainloop()
