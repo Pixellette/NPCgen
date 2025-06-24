@@ -1,32 +1,37 @@
 # ui.py
 
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import ttk, scrolledtext
 from npc.npc import NPC
 from traits.hair_colour import generate_hair_colour
+from traits.race import RACE_OPTIONS
+from traits.gender import GENDER_OPTIONS
 
 class NPCGeneratorApp(tk.Tk):
-    """Encapsulates the entire Tkinter-based UI for NPC generation."""
+    """All UI code separated out—dropdown + typing overrides for each trait."""
 
     def __init__(self):
         super().__init__()
-        # ── Window setup ───────────────────────────────────────────
         self.title("D&D NPC Generator")
-        self.geometry("500x450")
+        self.geometry("500x800")
 
-        # ── Prepare storage for override controls ───────────────────
-        # We'll track one IntVar & StringVar per trait in these dicts
-        self.override_vars = {}  
-        self.entry_vars    = {}
+        # Store our override & entry variables by trait name
+        self.override_vars = {}  # e.g. {'race': IntVar, 'gender': IntVar}
+        self.entry_vars    = {}  # e.g. {'race': StringVar, 'gender': StringVar}
 
-        # ── Frame to hold override checkboxes & entries ────────────
+        # ── Build override controls frame ──────────────────────────
         override_frame = tk.Frame(self)
-        override_frame.pack(fill=tk.X, padx=10, pady=(10, 0))
+        override_frame.pack(fill=tk.X, padx=10, pady=10)
 
-        # ── List the traits you want overrides for ─────────────────
-        traits = ["race", "gender"]
-        for idx, trait in enumerate(traits):
-            self._add_override_field(override_frame, trait, row=idx)
+        # Map each trait to its valid dropdown options
+        trait_options = {
+            "race":   RACE_OPTIONS,
+            "gender": GENDER_OPTIONS
+        }
+
+        # Loop & create one row per trait
+        for row, (trait, options) in enumerate(trait_options.items()):
+            self._add_override_field(override_frame, trait, options, row)
 
         # ── Generate button ───────────────────────────────────────
         self.generate_btn = tk.Button(
@@ -36,7 +41,7 @@ class NPCGeneratorApp(tk.Tk):
         )
         self.generate_btn.pack(pady=15)
 
-        # ── Output text area ──────────────────────────────────────
+        # ── Output area ───────────────────────────────────────────
         self.text_area = scrolledtext.ScrolledText(
             self,
             wrap=tk.WORD,
@@ -46,20 +51,21 @@ class NPCGeneratorApp(tk.Tk):
         self.text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0,10))
 
 
-    def _add_override_field(self, parent, trait, row):
+    def _add_override_field(self, parent, trait, options, row):
         """
-        Create a Checkbutton + Entry for a given trait.
-        Stores the IntVar and StringVar, and saves the Entry widget.
+        Creates:
+          - A Checkbutton to toggle override for `trait`
+          - A Combobox populated with `options` that also allows typing
+        Stores the IntVar & StringVar and the widget itself on self.
         """
-        # 1) Create the variables
+        # 1) Vars to track the checkbox & combobox contents
         ov_var = tk.IntVar(value=0)
         en_var = tk.StringVar()
 
-        # 2) Store them for later use
         self.override_vars[trait] = ov_var
         self.entry_vars[trait]    = en_var
 
-        # 3) Checkbutton to toggle the override
+        # 2) Checkbox to enable override
         cb = tk.Checkbutton(
             parent,
             text=f"Override {trait.capitalize()}",
@@ -68,61 +74,60 @@ class NPCGeneratorApp(tk.Tk):
         )
         cb.grid(row=row, column=0, sticky=tk.W)
 
-        # 4) Entry for custom value (starts disabled)
-        entry = tk.Entry(
+        # 3) Combobox for picking or typing a custom value
+        combo = ttk.Combobox(
             parent,
             textvariable=en_var,
-            state=tk.DISABLED,
-            width=20
+            values=options,
+            state="disabled"  # start disabled
         )
-        entry.grid(row=row, column=1, padx=5)
+        combo.grid(row=row, column=1, padx=5)
 
-        # 5) Save the Entry widget for enabling/disabling
-        setattr(self, f"{trait}_entry_widget", entry)
+        # 4) Save the widget for later enable/disable
+        setattr(self, f"{trait}_entry_widget", combo)
 
 
     def _toggle_entry(self, trait):
         """
-        Enable or disable the Entry associated with 'trait'
-        based on the Checkbutton’s IntVar.
+        Called when the override checkbox changes.
+        Enables/disables the corresponding Combobox widget.
         """
-        var = self.override_vars[trait]
         widget = getattr(self, f"{trait}_entry_widget")
-
-        if var.get():  
-            widget.config(state=tk.NORMAL)
+        if self.override_vars[trait].get():
+            # Allow both selecting from dropdown and typing new text
+            widget.config(state="normal")
         else:
-            # Clear the entry when disabling
+            # Clear & disable
             self.entry_vars[trait].set("")
-            widget.config(state=tk.DISABLED)
+            widget.config(state="disabled")
 
 
     def on_generate(self):
         """
-        1) Instantiate NPC
-        2) Apply any checked overrides
-        3) Recompute hair colour if race changed
-        4) Build and display the formatted text block
+        1) Make a new NPC()
+        2) Apply any overrides (via setattr)
+        3) If race changed, recalc hair_colour
+        4) Format and display the final block
         """
         npc = NPC()
 
-        # Apply overrides dynamically
-        for trait, ov_var in self.override_vars.items():
-            if ov_var.get():  # if override is checked
-                custom_val = self.entry_vars[trait].get().strip()
-                if custom_val:
-                    setattr(npc, trait, custom_val)
-                    # If race changed, refresh hair colour
+        # 2) Loop through each overridable trait
+        for trait, var in self.override_vars.items():
+            if var.get():  # checkbox is ticked
+                custom = self.entry_vars[trait].get().strip()
+                if custom:
+                    setattr(npc, trait, custom)
+                    # ensure hair colour matches a custom race
                     if trait == "race" and npc.hair_length != "Bald":
                         npc.hair_colour = generate_hair_colour(npc.race)
 
-        # Build the hair line
+        # 3) Build the hair line
         if npc.hair_length == "Bald":
             hair_line = "Bald"
         else:
             hair_line = f"{npc.hair_length} {npc.hair_colour} {npc.hair_style}"
 
-        # Compose the final output block
+        # 4) Compose the output
         output = (
             f"Name: {npc.name}\n"
             f"Race: {npc.race}\n"
@@ -132,7 +137,7 @@ class NPCGeneratorApp(tk.Tk):
             f"{npc.description}\n"
         )
 
-        # Display in the read-only text area
+        # Show it in our read-only text area
         self.text_area.config(state=tk.NORMAL)
         self.text_area.delete("1.0", tk.END)
         self.text_area.insert(tk.END, output)
