@@ -11,42 +11,42 @@ def generate_hair_style():
         "loose coiled hair",
 
         # ─── Ponytails ───────────────────────────────────────
-        "in a high ponytail",
-        "in a low ponytail",
-        "in a side ponytail",
-        "in a braided ponytail",
+        "hair in a high ponytail",
+        "hair in a low ponytail",
+        "hair in a side ponytail",
+        "hair in a braided ponytail",
 
         # ─── Buns ────────────────────────────────────────────
-        "in a tight bun",
-        "in a messy bun",
-        "in a low bun",
-        "in a top knot bun",
-        "in double buns",
+        "hair in a tight bun",
+        "hair in a messy bun",
+        "hair in a low bun",
+        "hair in a top knot bun",
+        "hair in double buns",
 
         # ─── Updos ───────────────────────────────────────────
-        "in a classic updo",
-        "in a twisted updo",
-        "in a half updo",
-        "in a chignon updo",
+        "hair in a classic updo",
+        "hair in a twisted updo",
+        "hair in a half updo",
+        "hair in a chignon updo",
 
         # ─── Braids ──────────────────────────────────────────
-        "in a single braid",
-        "in double braids",
-        "in a French braid",
-        "in a Dutch braid",
-        "in a fishtail braid",
-        "in a waterfall braid",
+        "hair in a single braid",
+        "hair in double braids",
+        "hair in a French braid",
+        "hair in a Dutch braid",
+        "hair in a fishtail braid",
+        "hair in a waterfall braid",
 
         # ─── Half-up / swept ─────────────────────────────────
-        "half up, half down",
+        "hair in a half up, half down style",
         "side-swept hair",
         "pulled-back hair",
 
         # ─── Textured & natural ─────────────────────────────
-        "defined ringlets",
-        "loose ringlets",
-        "natural afro",
-        "in a twist-out",
+        "hair with defined ringlets",
+        "hair with loose ringlets",
+        "hair in a natural afro",
+        "hair in a twist-out",
     ]
 
     return random.choice(hair_styles)

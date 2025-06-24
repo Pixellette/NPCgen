@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 from npc.npc import NPC
-from traits.hair_colour import generate_hair_colour
+from traits.hair_colour import generate_hair_colour, FALLBACK
 from traits.race import RACE_OPTIONS
 from traits.gender import GENDER_OPTIONS
 
@@ -24,9 +24,11 @@ class NPCGeneratorApp(tk.Tk):
         override_frame.pack(fill=tk.X, padx=10, pady=10)
 
         # Map each trait to its valid dropdown options
+        fallback_colors = [color for color, _ in FALLBACK]
         trait_options = {
             "race":   RACE_OPTIONS,
-            "gender": GENDER_OPTIONS
+            "gender": GENDER_OPTIONS,
+            "hair_colour": fallback_colors
         }
 
         # Loop & create one row per trait
